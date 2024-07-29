@@ -32,12 +32,12 @@ jobs:
           
       - name: Define VERSION
         run: |
-          echo "COMMIT=${GITHUB_SHA:0:7}" >> $GITHUB_ENV
-          echo "REPO_NAME=${GITHUB_REPOSITORY##*/}" >> $GITHUB_ENV
-          echo "BRANCH=${GITHUB_REF##*/}" >> $GITHUB_ENV
+          echo "COMMIT=${GITHUB_SHA:0:7}"
+          echo "REPO_NAME=${GITHUB_REPOSITORY##*/}"
+          echo "BRANCH=${GITHUB_REF##*/}"
           
       - name: Build
-        run: dotnet build -c Release /p:Version=${VERSION}
+        run: dotnet build -c Release
         
       - name: Test
         run: dotnet test -c Release

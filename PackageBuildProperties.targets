@@ -13,7 +13,7 @@
     <!-- NuGet Package -->
     <PropertyGroup>
         <PackageId>CompiledExpressions</PackageId>
-        <Description>Create Compiled Delegates like Setters from Getter expressions with binding accessibility checking. NativeAOT compatible with no run-time reflection.</Description>
+        <Description>Create Compiled Delegates like Setters from Getter expressions with nested member support and binding accessibility checking. NativeAOT compatible with no run-time reflection.</Description>
         <Copyright>ionite34</Copyright>
         <NeutralLanguage>en-US</NeutralLanguage>
         <Authors>ionite34</Authors>

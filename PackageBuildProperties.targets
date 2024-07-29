@@ -7,6 +7,7 @@
         <Version>1.0.0-dev.999</Version>
         <InformationalVersion>$(Version)</InformationalVersion>
         <PackageVersion>$(Version)</PackageVersion>
+        <NuGetVersion>$(Version)</NuGetVersion>
     </PropertyGroup>
     
     <!-- NuGet Package -->

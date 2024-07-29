@@ -1,6 +1,8 @@
-## CompiledExpressions
+# CompiledExpressions
+[![NuGet Version](https://img.shields.io/nuget/v/CompiledExpressions)](https://www.nuget.org/packages/CompiledExpressions)
 [![Build](https://github.com/ionite34/CompiledExpressions/actions/workflows/build.yml/badge.svg)](https://github.com/ionite34/CompiledExpressions/actions/workflows/build.yml)
 [![codecov](https://codecov.io/gh/ionite34/CompiledExpressions/branch/main/graph/badge.svg?token=Uyd765s2KE)](https://codecov.io/gh/ionite34/CompiledExpressions)
+![GitHub License](https://img.shields.io/github/license/ionite34/CompiledExpressions)
 
 Create Compiled Delegates like Setters from Getter expressions
 - Any level of nesting member support (i.e. `x => x.Prop1.Prop2.Prop3`)

@@ -41,7 +41,7 @@ jobs:
       - name: Set Package Names
         run: |
           echo "Using PKG_NAMES = ${{ env.PKG_NAMES }}"
-          echo "PKG_NAMES=${{ env.PKG_NAMES }} >> $GITHUB_ENV
+          echo "PKG_NAMES=${{ env.PKG_NAMES }}" >> $GITHUB_ENV
         env:
           PKG_NAMES: |
             [

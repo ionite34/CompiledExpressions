@@ -1,0 +1,27 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <Version>1.0.0-dev.999</Version>
+        <InformationalVersion>$(Version)</InformationalVersion>
+        <PackageVersion>$(Version)</PackageVersion>
+    </PropertyGroup>
+    
+    <!-- NuGet Package -->
+    <PropertyGroup>
+        <Authors>ionite34</Authors>
+        <RepositoryType>git</RepositoryType>
+        <RepositoryUrl>https://github.com/ionite34/CompiledExpressions</RepositoryUrl>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="$(SolutionDir)/README.md" Pack="true" PackagePath="/"/>
+    </ItemGroup>
+    
+</Project>

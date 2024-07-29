@@ -1,0 +1,105 @@
+name: Build
+
+permissions:
+  contents: write
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        type: string
+        required: true
+        description: Version (Semver without leading v)
+      nuget-release:
+        type: boolean
+        description: Release NuGet Package?
+        default: true
+      github-release:
+        type: boolean
+        description: Make GitHub Release?
+        default: true
+      github-release-draft:
+        type: boolean
+        description: Mark GitHub Release as Draft?
+        default: false
+      github-release-prerelease:
+        type: boolean
+        description: Mark GitHub Release as Prerelease?
+        default: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Set Version from manual input
+        run: |
+          echo "Using RELEASE_VERSION = ${{ github.event.inputs.version }}"
+          echo "RELEASE_VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
+          
+      - name: Set Package Names
+        run: |
+          echo "Using PKG_NAMES = ${{ env.PKG_NAMES }}"
+          echo "PKG_NAMES=${{ env.PKG_NAMES }} >> $GITHUB_ENV
+        env:
+          PKG_NAMES: |
+            [
+              "./out/CompiledExpressions.${{ env.RELEASE_VERSION }}.nupkg"
+            ]
+        
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1.0.2
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.100'
+        
+      - name: Build
+        run: dotnet build -c Release /p:Version=${VERSION}
+
+      - name: Test
+        run: dotnet test --no-build
+        
+      - name: Pack
+        run: dotnet pack -p CompiledExpressions --no-build --output out /p:Version=${VERSION}
+        
+      - name: Check Files
+        run: |
+          echo "Checking files exist"
+          for file in ${{ fromJSON(env.PKG_NAMES) }}; do
+              if [ ! -f $file ]; then
+              echo "File $file does not exist"
+              exit 1
+              fi
+          done
+        
+      - name: Add NuGet Source
+        run: |
+          dotnet nuget add source https://nuget.pkg.github.com/ionite34/index.json 
+          --name github --username ionite34 --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text
+          
+      - name: Push Packages
+        run: |
+          for file in ${{ fromJSON(env.PKG_NAMES) }}; do
+              echo "Pushing $file"
+              dotnet nuget push $file --source github --api-key ${{ secrets.GITHUB_TOKEN }}
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Github Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          files: ${{ fromJSON(env.PKG_NAMES) }}
+          fail_on_unmatched_files: true
+          tag_name: v${{ github.event.inputs.version }}
+          body: '# v${{ github.event.inputs.version }}'
+          draft: ${{ github.event.inputs.github-release-draft == 'true' }}
+          prerelease: ${{ github.event.inputs.github-release-prerelease == 'true' }} 

@@ -56,13 +56,13 @@ jobs:
             8.0.x
         
       - name: Build
-        run: dotnet build -c Release /p:Version=${VERSION}
+        run: dotnet build -c Release -p:Version=$RELEASE_VERSION
 
       - name: Test
         run: dotnet test --no-build
         
       - name: Pack
-        run: dotnet pack -p CompiledExpressions --no-build --output out /p:Version=${VERSION}
+        run: dotnet pack -p CompiledExpressions --no-build --output out
         
       # - name: Add NuGet Source
       #   run: |

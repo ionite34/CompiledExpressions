@@ -40,7 +40,7 @@ jobs:
           
       - name: Set Package Name
         run: |
-          echo "PKG_NAME=./out/CompiledExpressions.${{ env.RELEASE_VERSION }}.nupkg" >> $GITHUB_ENV
+          echo "PKG_NAME=./CompiledExpressions/bin/Release/CompiledExpressions.${{ env.RELEASE_VERSION }}.nupkg" >> $GITHUB_ENV
           echo "Using PKG_NAME = ${{ env.PKG_NAME }}"
         
       - name: Checkout
@@ -60,9 +60,6 @@ jobs:
 
       - name: Test
         run: dotnet test -c Release --no-build
-        
-      - name: Pack
-        run: dotnet pack -c Release -p CompiledExpressions --no-build --output out
         
       # - name: Add NuGet Source
       #   run: |

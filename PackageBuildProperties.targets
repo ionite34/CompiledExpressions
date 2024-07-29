@@ -11,10 +11,17 @@
     
     <!-- NuGet Package -->
     <PropertyGroup>
+        <PackageId>CompiledExpressions</PackageId>
+        <Description>Create Compiled Expressions like Setters from Getter expressions with binding accessibility checking. NativeAOT compatible with no run-time reflection.</Description>
+        <Copyright>ionite34</Copyright>
+        <NeutralLanguage>en-US</NeutralLanguage>
         <Authors>ionite34</Authors>
         <RepositoryType>git</RepositoryType>
-        <RepositoryUrl>https://github.com/ionite34/CompiledExpressions</RepositoryUrl>
+        <RepositoryUrl>https://github.com/ionite34/$(PackageId)</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/ionite34/$(PackageId)</PackageProjectUrl>
+        <PackageReleaseNotes>https://github.com/ionite34/$(PackageId)/blob/master/CHANGELOG.md</PackageReleaseNotes>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageTags>library</PackageTags>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <PackageReadmeFile>README.md</PackageReadmeFile>

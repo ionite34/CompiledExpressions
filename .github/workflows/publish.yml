@@ -38,15 +38,10 @@ jobs:
           echo "Using RELEASE_VERSION = ${{ github.event.inputs.version }}"
           echo "RELEASE_VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
           
-      - name: Set Package Names
+      - name: Set Package Name
         run: |
-          echo "Using PKG_NAMES = ${{ env.PKG_NAMES }}"
-          echo "PKG_NAMES=${{ env.PKG_NAMES }}" >> $GITHUB_ENV
-        env:
-          PKG_NAMES: |
-            [
-              "./out/CompiledExpressions.${{ env.RELEASE_VERSION }}.nupkg"
-            ]
+          echo "PKG_NAME=./out/CompiledExpressions.${{ env.RELEASE_VERSION }}.nupkg" >> $GITHUB_ENV
+          echo "Using PKG_NAME = ${{ env.PKG_NAME }}"
         
       - name: Checkout
         uses: actions/checkout@v4
@@ -69,16 +64,6 @@ jobs:
       - name: Pack
         run: dotnet pack -p CompiledExpressions --no-build --output out /p:Version=${VERSION}
         
-      - name: Check Files
-        run: |
-          echo "Checking files exist"
-          for file in ${{ fromJSON(env.PKG_NAMES) }}; do
-              if [ ! -f $file ]; then
-              echo "File $file does not exist"
-              exit 1
-              fi
-          done
-        
       # - name: Add NuGet Source
       #   run: |
       #     dotnet nuget add source https://nuget.pkg.github.com/ionite34/index.json 
@@ -86,10 +71,8 @@ jobs:
           
       - name: Push Packages to NuGet
         run: |
-          for file in ${{ fromJSON(env.PKG_NAMES) }}; do
-              echo "Pushing $file"
-              dotnet nuget push $file --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }}
-          done
+          echo "Pushing ${{ env.PKG_NAME }}"
+          dotnet nuget push ${{ env.PKG_NAME }} --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }}
 
       - name: Create Github Release
         id: create_release
@@ -97,7 +80,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          files: ${{ fromJSON(env.PKG_NAMES) }}
+          files: |
+            ${{ env.PKG_NAME }}
           fail_on_unmatched_files: true
           tag_name: v${{ github.event.inputs.version }}
           body: '# v${{ github.event.inputs.version }}'

@@ -29,6 +29,7 @@ on:
 
 jobs:
   publish:
+
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -78,19 +79,17 @@ jobs:
               fi
           done
         
-      - name: Add NuGet Source
-        run: |
-          dotnet nuget add source https://nuget.pkg.github.com/ionite34/index.json 
-          --name github --username ionite34 --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text
+      # - name: Add NuGet Source
+      #   run: |
+      #     dotnet nuget add source https://nuget.pkg.github.com/ionite34/index.json 
+      #     --name github --username ionite34 --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text
           
-      - name: Push Packages
+      - name: Push Packages to NuGet
         run: |
           for file in ${{ fromJSON(env.PKG_NAMES) }}; do
               echo "Pushing $file"
-              dotnet nuget push $file --source github --api-key ${{ secrets.GITHUB_TOKEN }}
+              dotnet nuget push $file --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_API_KEY }}
           done
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create Github Release
         id: create_release

@@ -36,8 +36,21 @@ jobs:
           echo "REPO_NAME=${GITHUB_REPOSITORY##*/}"
           echo "BRANCH=${GITHUB_REF##*/}"
           
-      - name: Build
+      - name: Build (Debug)
+        run: dotnet build -c Debug
+
+      - name: Test (Debug)
+        run: dotnet test -c Debug -p:CollectCoverage=true -p:CoverletOutputFormat=opencover
+          
+      - name: Build (Release)
         run: dotnet build -c Release
         
-      - name: Test
-        run: dotnet test -c Release
+      - name: Test (Release)
+        run: dotnet test -c Release -p:CollectCoverage=true -p:CoverletOutputFormat=opencover
+        
+      - name: Upload Codecov
+        uses: codecov/codecov-action@v4.0.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+        

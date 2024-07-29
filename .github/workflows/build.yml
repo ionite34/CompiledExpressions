@@ -30,13 +30,9 @@ jobs:
           
       - name: Define VERSION
         run: |
-          $env:COMMIT = $env:GITHUB_SHA.Substring(0, 7)
-          $env:REPO_NAME = $env:GITHUB_REPOSITORY -replace '.*/'
-          $env:BRANCH = $env:GITHUB_REF -replace '.*/'
-
-          ($env:REPO_NAME) >> VERSION
-          ($env:BRANCH) >> VERSION
-          ($env:COMMIT) >> VERSION
+          echo "COMMIT=${GITHUB_SHA:0:7}" >> $GITHUB_ENV
+          echo "REPO_NAME=${GITHUB_REPOSITORY##*/}" >> $GITHUB_ENV
+          echo "BRANCH=${GITHUB_REF##*/}" >> $GITHUB_ENV
           
       - name: Build
         run: dotnet build -c Release /p:Version=${VERSION}

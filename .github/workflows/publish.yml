@@ -1,4 +1,4 @@
-name: Build
+name: Publish
 
 permissions:
   contents: write
@@ -28,7 +28,7 @@ on:
         default: false
 
 jobs:
-  build:
+  publish:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:

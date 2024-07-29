@@ -40,18 +40,18 @@ public class CompiledExpression
     /// Creates a CompiledAccessor from a property getter and setter expression.
     /// </summary>
     /// <param name="getExpression">Property getter expression</param>
-    /// <param name="setExpression">Property setter expression</param>
+    /// <param name="setAction">Property setter action</param>
     /// <typeparam name="T">Type of the root instance</typeparam>
     /// <typeparam name="TValue">Type of the accessed property or field</typeparam>
     /// <returns>New CompiledAccessor</returns>
     public static CompiledAccessor<T, TValue> CreateAccessor<T, TValue>(
         Expression<Func<T, TValue>> getExpression,
-        Expression<Action<T, TValue>> setExpression
+        Action<T, TValue> setAction
     )
     {
         return new CompiledAccessor<T, TValue>(
             getExpression.Compile(),
-            setExpression.Compile()
+            setAction
         )
         {
             MemberNames = Expressions.GetAccessorMemberNames(getExpression).ToArray()

@@ -8,7 +8,7 @@ public class ExpressionsTests
     [TestMethod]
     public void GetAssigner_Simple_PropertyName()
     {
-        var (propertyName, _) = Expressions.GetAssigner<TestClass, int>(x => x.Id);
+        var (propertyName, _) = Expressions.GetSimpleAssigner<TestClass, int>(x => x.Id);
 
         // Check that the property name is correct
         Assert.AreEqual("Id", propertyName);
@@ -19,7 +19,7 @@ public class ExpressionsTests
     {
         var obj = new TestClass();
 
-        var (_, assigner) = Expressions.GetAssigner<TestClass, int>(x => x.Id);
+        var (_, assigner) = Expressions.GetSimpleAssigner<TestClass, int>(x => x.Id);
 
         assigner.Compile()(obj, 42);
 
@@ -145,5 +145,15 @@ public class ExpressionsTests
         setter(testObj, 123);
 
         Assert.AreEqual(123, testObj.Nested.PrivateGetId);
+    }
+
+    [TestMethod]
+    public void ParseMemberExpression_Nested()
+    {
+        var testObj = TestClass.CreateNested(5);
+
+        var result = Expressions.ParseMemberExpression<TestClass, int>(x => x.Nested!.Nested!.Nested!.Id);
+
+        Assert.AreEqual("Id", result.MemberAccess.Member.Name);
     }
 }

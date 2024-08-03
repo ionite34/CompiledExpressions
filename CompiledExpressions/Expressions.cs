@@ -8,7 +8,11 @@ namespace CompiledExpressions;
 
 internal static class Expressions
 {
-    public static (string propertyName, Expression<Action<T, TValue>> assigner) GetAssigner<T, TValue>(
+    /// <summary>
+    /// Gets the property name and setter expression from a simple property accessor.
+    /// Does not support nested properties.
+    /// </summary>
+    public static (string propertyName, Expression<Action<T, TValue>> assigner) GetSimpleAssigner<T, TValue>(
         Expression<Func<T, TValue>> propertyAccessor
     )
     {
@@ -37,15 +41,29 @@ internal static class Expressions
         );
         return (propertyName, expr);
     }
-
+    
     /// <summary>
-    /// Enumerates the MemberInfos of a property access expression
+    /// Gets the member names of a member access expression.
     /// </summary>
-    private static IEnumerable<MemberInfo> EnumerateMemberInfos<T, TValue>(
-        Expression<Func<T, TValue>> propertyAccessor
+    public static IReadOnlyList<string> GetAccessorMemberNames<T, TValue>(
+        Expression<Func<T, TValue>> memberAccessor
     )
     {
-        var currentExpression = propertyAccessor.Body;
+        var members = EnumerateAccessorMemberInfos(memberAccessor);
+
+        // Member info names, in reverse order
+        return members.Select(x => x.Name).Reverse().ToArray();
+    }
+
+    /// <summary>
+    /// Enumerates the MemberInfos of a member access expression.
+    /// This will be in reverse order, starting from the innermost member.
+    /// </summary>
+    private static IEnumerable<MemberInfo> EnumerateAccessorMemberInfos<T, TValue>(
+        Expression<Func<T, TValue>> memberAccessor
+    )
+    {
+        var currentExpression = memberAccessor.Body;
 
         // There is a chain of getters in propertyToSet, with at the
         // beginning a ConstantExpression. We put the MemberInfo of
@@ -72,46 +90,27 @@ internal static class Expressions
     }
 
     /// <summary>
-    /// Gets the full name or path of a member access expression
+    /// Gets a setter method from a getter expression.
     /// </summary>
-    public static string GetAccessorFullName<T, TValue>(Expression<Func<T, TValue>> propertyAccessor)
-    {
-        return string.Join(".", GetAccessorMemberNames(propertyAccessor));
-    }
-
-    /// <summary>
-    /// Gets the member names of a member access expression
-    /// </summary>
-    public static IEnumerable<string> GetAccessorMemberNames<T, TValue>(
-        Expression<Func<T, TValue>> propertyAccessor
-    )
-    {
-        var members = EnumerateMemberInfos(propertyAccessor);
-
-        // Member info names, in reverse order
-        return members.Select(x => x.Name).Reverse();
-    }
-
+    /// <exception cref="InvalidOperationException">If the property does not have an accessible setter</exception>
     public static Action<T, TValue> GetterToSetterMethod<T, TValue>(
         Expression<Func<T, TValue>> getter,
         bool nonPublic = false
     )
     {
-        var (parameter, instance, memberAccess) = ParseMemberExpression(getter);
+        var result = ParseMemberExpression(getter);
 
         // Very simple case: p => p.Property or p => p.Field
-        if (parameter == instance)
+        if (result.Parameter == result.Instance)
         {
-            if (memberAccess.Member.MemberType == MemberTypes.Property)
+            if (result.MemberAccess.Member.MemberType == MemberTypes.Property)
             {
-                // This is faster than Expression trees, but works only on public properties
-                var property = (PropertyInfo)memberAccess.Member;
+                var property = (PropertyInfo)result.MemberAccess.Member;
 
+                // This is faster than Expression trees, but works only on public properties
                 if (property.GetSetMethod(nonPublic) is { } setter)
                 {
-                    var action =
-                        (Action<T, TValue>)Delegate.CreateDelegate(typeof(Action<T, TValue>), setter);
-                    return action;
+                    return (Action<T, TValue>)Delegate.CreateDelegate(typeof(Action<T, TValue>), setter);
                 }
 
                 // GetSetMethod was null, error if nonPublic is false
@@ -124,11 +123,11 @@ internal static class Expressions
                 }
             }
         }
-        
+
         // Check that the final member access has public setter
-        if (!nonPublic && memberAccess.Member.MemberType == MemberTypes.Property)
+        if (!nonPublic && result.MemberAccess.Member.MemberType == MemberTypes.Property)
         {
-            var property = (PropertyInfo)memberAccess.Member;
+            var property = (PropertyInfo)result.MemberAccess.Member;
             if (property.GetSetMethod(nonPublic) is null)
             {
                 throw new InvalidOperationException(
@@ -136,14 +135,18 @@ internal static class Expressions
                 );
             }
         }
-        
+
         var value = Expression.Parameter(typeof(TValue), "val");
 
-        var expr = Expression.Assign(memberAccess, value);
+        var expr = Expression.Assign(result.MemberAccess, value);
 
-        return Expression.Lambda<Action<T, TValue>>(expr, parameter, value).Compile();
+        return Expression.Lambda<Action<T, TValue>>(expr, result.Parameter, value).Compile();
     }
 
+    /// <summary>
+    /// Gets a setter expression from a getter expression.
+    /// </summary>
+    /// <exception cref="InvalidOperationException"></exception>
     public static Expression<Action<T, TValue>> GetterToSetter<T, TValue>(
         Expression<Func<T, TValue>> getter,
         bool nonPublic = false
@@ -162,7 +165,7 @@ internal static class Expressions
                 );
             }
         }
-        
+
         var value = Expression.Parameter(typeof(TValue), "val");
 
         var expr = Expression.Assign(result.MemberAccess, value);
@@ -170,7 +173,15 @@ internal static class Expressions
         return Expression.Lambda<Action<T, TValue>>(expr, result.Parameter, value);
     }
 
-    private static (
+    /// <summary>
+    /// Parses a member access expression into its components
+    /// </summary>
+    /// <param name="expression"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="TValue"></typeparam>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
+    public static (
         ParameterExpression Parameter,
         Expression Instance,
         MemberExpression MemberAccess
@@ -180,47 +191,59 @@ internal static class Expressions
 
         while (currentExpression.NodeType is ExpressionType.Convert or ExpressionType.TypeAs)
         {
-            currentExpression = (currentExpression as UnaryExpression)!.Operand;
+            currentExpression = ((UnaryExpression)currentExpression).Operand;
         }
 
-        if (currentExpression.NodeType != ExpressionType.MemberAccess)
+        // Get the full access chain to the last member
+        // e.g. `x.Property1.Property2.Property3`
+        if (currentExpression is not MemberExpression memberAccess)
         {
             throw new ArgumentException(
-                $"Expression body type must be a member access, not {currentExpression.NodeType}"
+                $"Expression body type must be MemberAccess, not {currentExpression.NodeType}: {currentExpression}",
+                nameof(expression)
             );
         }
 
-        // Get the initial member access
-        if (currentExpression is not MemberExpression memberAccess)
-        {
-            throw new ArgumentException("Expression must access a member property or field");
-        }
-
+        // Get the expression for the instance of the last member
+        // e.g. `x.Property1.Property2`
         if (memberAccess.Expression is not { } instanceExpression)
         {
-            throw new ArgumentException("Expression member must have a non-null expression");
+            throw new ArgumentException(
+                $"Expression member must have a non-null expression: {memberAccess}",
+                nameof(expression)
+            );
         }
 
         currentExpression = instanceExpression;
 
-        while (currentExpression is not null && currentExpression.NodeType != ExpressionType.Parameter)
+        while (currentExpression.NodeType != ExpressionType.Parameter)
         {
             currentExpression = currentExpression.NodeType switch
             {
+                // Get Operand of any Convert or TypeAs expressions
                 ExpressionType.Convert
                 or ExpressionType.TypeAs
-                    => (currentExpression as UnaryExpression)!.Operand,
-                ExpressionType.MemberAccess => (currentExpression as MemberExpression)!.Expression,
+                    => ((UnaryExpression)currentExpression).Operand,
+                ExpressionType.MemberAccess
+                    => ((MemberExpression)currentExpression).Expression
+                        ?? throw new ArgumentException(
+                            $"Expression member must have a non-null expression: {currentExpression}",
+                            nameof(expression)
+                        ),
                 _
                     => throw new ArgumentException(
-                        $"Expression member must be a parameter, not {currentExpression.NodeType}"
+                        $"Expression member type must be MemberAccess or Parameter, not {currentExpression.NodeType}: {currentExpression}",
+                        nameof(expression)
                     )
             };
         }
 
         if (currentExpression is not ParameterExpression parameterExpression)
         {
-            throw new ArgumentException("Expression member must have a parameter");
+            throw new ArgumentException(
+                $"Expression member must have a parameter: {currentExpression}",
+                nameof(expression)
+            );
         }
 
         return (parameterExpression, instanceExpression, memberAccess);

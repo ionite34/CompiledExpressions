@@ -41,9 +41,21 @@ internal static class Expressions
         );
         return (propertyName, expr);
     }
-    
+
+    /// <summary>
+    /// Gets the full member path name of a member access expression.
+    /// (e.g. "Nested.Text" for `x => x.Nested.Text`)
+    /// </summary>
+    public static string GetAccessorFullName<T, TValue>(Expression<Func<T, TValue>> memberAccessor)
+    {
+        var memberNames = EnumerateAccessorMemberInfos(memberAccessor).Select(x => x.Name).Reverse();
+
+        return string.Join(".", memberNames);
+    }
+
     /// <summary>
     /// Gets the member names of a member access expression.
+    /// (e.g. ["Nested", "Text"] for `x => x.Nested.Text`)
     /// </summary>
     public static IReadOnlyList<string> GetAccessorMemberNames<T, TValue>(
         Expression<Func<T, TValue>> memberAccessor

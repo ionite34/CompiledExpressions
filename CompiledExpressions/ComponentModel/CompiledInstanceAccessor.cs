@@ -8,17 +8,9 @@ namespace CompiledExpressions.ComponentModel;
 /// </summary>
 /// <typeparam name="T">Type of the root instance</typeparam>
 /// <typeparam name="TValue">Type of the property or field</typeparam>
-public readonly struct CompiledInstanceAccessor<T, TValue>
+public class CompiledInstanceAccessor<T, TValue> : CompiledAccessor<T, TValue>
 {
     private readonly T _instance;
-    private readonly Func<T, TValue> _getter;
-    private readonly Action<T, TValue> _setter;
-
-    /// <inheritdoc cref="CompiledAccessor{T,TValue}.MemberNames"/>
-    public string[] MemberNames { get; init; } = [];
-
-    /// <inheritdoc cref="CompiledAccessor{T,TValue}.FullName"/>
-    public string FullName => string.Join(".", MemberNames);
 
     /// <summary>
     /// Creates a CompiledInstanceAccessor with the specified instance and the existing getter and setter.
@@ -27,10 +19,9 @@ public readonly struct CompiledInstanceAccessor<T, TValue>
     /// <param name="getter">Get Function accepting a root instance and returning the property or field value.</param>
     /// <param name="setter">Set Action accepting a root instance and the new property or field value.</param>
     public CompiledInstanceAccessor(T instance, Func<T, TValue> getter, Action<T, TValue> setter)
+        : base(getter, setter)
     {
         _instance = instance;
-        _getter = getter;
-        _setter = setter;
     }
 
     /// <summary>
@@ -38,21 +29,12 @@ public readonly struct CompiledInstanceAccessor<T, TValue>
     /// </summary>
     /// <returns>Property or field value</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public TValue Get() => _getter(_instance);
-
-    /// <inheritdoc cref="CompiledAccessor{T,TValue}.Get"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public TValue Get(T instance) => _getter(instance);
-
+    public TValue Get() => Getter(_instance);
 
     /// <summary>
     /// Sets the value of the property or field on the instance.
     /// </summary>
     /// <param name="value">New value to set</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Set(TValue value) => _setter(_instance, value);
-
-    /// <inheritdoc cref="CompiledAccessor{T,TValue}.Set"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Set(T instance, TValue value) => _setter(instance, value);
+    public void Set(TValue value) => Setter(_instance, value);
 }

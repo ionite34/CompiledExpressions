@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- `CompiledInstanceAccessor` now inherits `CompiledAccessor` and are now classes instead of structs.
+- Performance improvements for internal operations.
 ### Fixed
 - Fixed `CompiledExpression.CreateAccessor(Expression<Func<T, TValue>> getExpression, Expression<Action<T, TValue>> setExpression)` overload not valid as an expression tree. Second argument is now `Action<T, TValue> setAction`.
 

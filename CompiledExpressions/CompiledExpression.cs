@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Linq.Expressions;
 using CompiledExpressions.ComponentModel;
 using JetBrains.Annotations;
@@ -32,7 +31,7 @@ public class CompiledExpression
             Expressions.GetterToSetterMethod(expression)
         )
         {
-            MemberNames = Expressions.GetAccessorMemberNames(expression).ToArray()
+            MemberNames = Expressions.GetAccessorMemberNames(expression)
         };
     }
     
@@ -54,7 +53,7 @@ public class CompiledExpression
             setAction
         )
         {
-            MemberNames = Expressions.GetAccessorMemberNames(getExpression).ToArray()
+            MemberNames = Expressions.GetAccessorMemberNames(getExpression)
         };
     }
 }

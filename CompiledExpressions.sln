@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CompiledExpressions.Tests",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CompiledExpressions.Sample", "CompiledExpressions.Sample\CompiledExpressions.Sample.csproj", "{3114CE52-58A0-4282-9CD4-D9D9B6B6182F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CompiledExpressions.Benchmarks", "CompiledExpressions.Benchmarks\CompiledExpressions.Benchmarks.csproj", "{86A59F12-F6A9-472E-8EB9-BF3A5D58DD21}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{3114CE52-58A0-4282-9CD4-D9D9B6B6182F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3114CE52-58A0-4282-9CD4-D9D9B6B6182F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3114CE52-58A0-4282-9CD4-D9D9B6B6182F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{86A59F12-F6A9-472E-8EB9-BF3A5D58DD21}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{86A59F12-F6A9-472E-8EB9-BF3A5D58DD21}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{86A59F12-F6A9-472E-8EB9-BF3A5D58DD21}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{86A59F12-F6A9-472E-8EB9-BF3A5D58DD21}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

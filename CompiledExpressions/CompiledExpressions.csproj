@@ -18,6 +18,7 @@
     
     <ItemGroup>
         <InternalsVisibleTo Include="CompiledExpressions.Tests" />
+        <InternalsVisibleTo Include="CompiledExpressions.Benchmarks" />
     </ItemGroup>
     
     <ItemGroup>
